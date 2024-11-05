@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { API_URL } from '../data/apiPath';
+import { jwtDecode } from 'jwt-decode';
 
 const PastOutings = () => {
   const [pastOutings, setPastOutings] = useState([]);
   const [filteredOutings, setFilteredOutings] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState('');
+  const [studentId, setStudentId] = useState('');
   const [months] = useState([
     { value: '', label: 'All Months' },
     { value: '01', label: 'January' },
@@ -23,16 +25,31 @@ const PastOutings = () => {
 
   useEffect(() => {
     fetchPastOutings();
-  }, []);
+  }, [studentId]);
 
   useEffect(() => {
     filterOutings();
   }, [pastOutings, selectedMonth]);
 
+  useEffect(() => {
+    getId();
+  }, []);
+
+  const getId = () => {
+    const token = localStorage.getItem('loginToken');
+    if (token) {
+      const decoded = jwtDecode(token);
+      console.log(decoded);
+      setStudentId(decoded.studentId);
+    }
+  };
+
   const fetchPastOutings = async () => {
     try {
-      const response = await fetch(`${API_URL}/outing/allOutings`);
+     
+      const response = await fetch(`${API_URL}/outing/single-outing/${studentId}`);
       const data = await response.json();
+      console.log(data);
       const outings = data.data || [];
 
       // Sort by recent first (assuming outingDate is part of the outing object)
